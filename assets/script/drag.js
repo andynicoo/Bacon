@@ -4,6 +4,7 @@ cc.Class({
 
     onLoad () {
         this.node.on('touchmove', this.onTouchMove.bind(this), this.node);
+        
     },
 
     onTouchMove(touch){
@@ -21,5 +22,7 @@ cc.Class({
             collider.offset = cc.v2(x,y)
             collider.apply()
         }
-    }
+    },
+
+    
 });
