@@ -24,18 +24,30 @@ module.exports = {
         }
     },
     getNodeJson(element) {
-        let node = cc.engine.getInstanceById(element._id)
         let o = {}
-        console.log(node,element)
-        // if(rigidBody){
-        //     o.rigidBody = this.getRigidJson(element)
-        // }
+        
+        let rigidBody = element.getComponent(cc.RigidBody);
+        if(rigidBody){
+            o.rigidBody = this.getRigidJson(rigidBody)
+        }
 
-        o.self = [element.x , element.y, element.width, element.height]
+        let collider = element.getComponent(cc.Collider);
+        console.log(collider)
+        if(collider){
+            o.collider = this.getPhysicsPolygonColliderJson(collider)
+        }
+
+        o.self = [[element.x , element.y], [element.width, element.height]]
         return o
     },
-    getRigidJson(node){
-        
+    getRigidJson(obj){
+        let json = { }
+        json.type = obj.type
+        return json
+    },
+    getPhysicsPolygonColliderJson(obj){
+        let json = {}
+
     },
     getObstacleJson(obs) {
         let wall = {}
