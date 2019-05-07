@@ -1,21 +1,18 @@
 module.exports = {
     // prefabs: null,
-    'saveLevel': function (event, info) {
-        let node = cc.engine.getInstanceById(info._value)
-
-        let ret = {}
-        ret.nodes = []
+    'saveLevel': function (event, el) {
+        let node = cc.engine.getInstanceById(el._value)
+        let _obj = {}
+        _obj.nodes = []
         node.children.forEach(element => {
             let nodeJson = this.getNodeJson(element)
             if (nodeJson) {
-                ret.nodes.push(nodeJson)
+                _obj.nodes.push(nodeJson)
             }
         });
-        
-        
-        // Editor.Ipc.sendToMain('level-editor:saveJson', info._name, JSON.stringify(ret));
-        let name = info._name, str = JSON.stringify(ret)
-        let url = 'db://assets/resources/level/' + name + '.json'
+        let name = el._name;
+        let str = JSON.stringify(_obj);
+        let url = 'db://assets/resources/level/'+ name + '.json'
         if (Editor.assetdb.remote.exists(url)) {
             Editor.assetdb.remote.saveExists(url, str);
         }
@@ -24,91 +21,43 @@ module.exports = {
         }
     },
     getNodeJson(element) {
-        let o = {}
-        
+        let _obj = {}
+        // 刚体属性
         let rigidBody = element.getComponent(cc.RigidBody);
         if(rigidBody){
-            o.rigidBody = this.getRigidJson(rigidBody)
+            _obj.rigidBody = this.getRigidJson(rigidBody)
         }
-
+        // 多边形碰撞属性
         let collider = element.getComponent(cc.Collider);
-        console.log(collider)
         if(collider){
-            o.collider = this.getPhysicsPolygonColliderJson(collider)
+            _obj.collider = this.getColliderJson(collider)
         }
-
-        o.self = [[element.x , element.y], [element.width, element.height]]
-        return o
+        // 自身属性
+        _obj.self = {
+            position: {
+                x: element.x,
+                y: element.y
+            },
+            width: element.width,
+            height: element.height,
+            name: element._name
+        }
+        return _obj
     },
+    // 获取刚体信息
     getRigidJson(obj){
-        let json = { }
-        json.type = obj.type
-        return json
+        return {
+            type : obj.type
+        }
     },
-    getPhysicsPolygonColliderJson(obj){
-        let json = {}
-
-    },
-    getObstacleJson(obs) {
-        let wall = {}
-        wall.t = NodeType.WALL
-        // wall.name = obs.node.name
-        if (obs.holdMoveVec) {
-            wall.hmv = obs.holdMoveVec
+    // 获取碰撞信息
+    getColliderJson(obj){
+        return {
+            offset : obj.offset,
+            friction: obj.friction,
+            points : obj.points,
+            restitution: obj.restitution
         }
-        if (obs.lifeTime) {
-            wall.lt = obs.lifeTime
-        }
-        if (obs.levelFinish) {
-            wall.lf = obs.levelFinish
-        }
-        if (obs.bounce) {
-            wall.b = obs.bounce
-        }
-        if (obs.loopActionType) {
-            wall.lad = obs.loopActionDuration
-            wall.lat = obs.loopActionType
-            if (obs.loopActionDelay) {
-                wall.dly = obs.loopActionDelay
-            }
-            if (obs.loopActionTarget) {
-                wall.ltar = this.getNodeJson(obs.loopActionTarget)
-            }
-        }
-        else {
-            let child = this.getChild(obs.node)
-            if (child) {
-                wall.child = child
-            }
-        }
-        if (obs.allowLeaf) {
-            wall.al = obs.allowLeaf
-        }
-
-        return wall
-    },
-    getRailJson(comp) {
-        let rail = {}
-        rail.t = NodeType.RAIL
-        rail.mpp = comp.movePathPoints
-        rail.md = comp.moveDuration
-        if (comp.moveNode) {
-            rail.mn = this.getNodeJson(comp.moveNode)
-        }
-        return rail
-    },
-    getSpine(dz) {
-        let spine = {}
-        spine.t = NodeType.SPINE
-        spine.st = dz.type
-        spine.r = [dz.node.x / GameDefine.WALL_INTERVAL, dz.node.y / GameDefine.WALL_INTERVAL, dz.node.width / GameDefine.WALL_UNIT_WIDTH, dz.node.height / GameDefine.WALL_UNIT_HEIGHT]
-        if (spine.st === 0) {
-            spine.f = dz.node.scaleX
-        }
-        else if (spine.st === 1) {
-            spine.ay = dz.node.anchorY
-        }
-        return spine
     },
     getChild(node) {
         let ret = null
