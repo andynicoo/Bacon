@@ -43,12 +43,26 @@ cc.Class({
             sprite.spriteFrame = spriteFrame
             cc.find('Canvas').addChild(node);
             that.createRigidBody(node,element.rigidBody)
+            that.createCollider(node,element.collider)
         })
     },
-    createRigidBody(node,rigidInfo){
+    // 添加刚体
+    createRigidBody(node,data){
         let rigidBody = node.addComponent(cc.RigidBody)
-        rigidBody.type = 'Static'
-        console.log(rigidBody)
+        rigidBody.type = cc.RigidBodyType.Static
+    },
+    // 添加碰撞属性
+    createCollider(node,data){
+        let collider = node.addComponent(cc.PhysicsPolygonCollider)
+        let points = []
+        collider.offset = data.offset
+        collider.friction = data.friction
+        collider.restitution = data.restitution
+        data.points.forEach((point)=>{
+            points.push(cc.v2(point))
+        })
+        collider.points = points
+        collider.apply()
     },
     down (content, filename) {
         var eleLink = document.createElement('a');
